@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Admin</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.ico') }}" type="image/x-icon" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/style_login.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="Logo" class="logo" />
+    </a>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="error-text visible">
+          {% for msg in messages %}
+            <p>{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" autocomplete="off" novalidate>
+      <input
+        type="text"
+        name="username"
+        placeholder="Usuário"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        required
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Senha"
+        autocomplete="off"
+        required
+      />
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

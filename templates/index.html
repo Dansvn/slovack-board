@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Site</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}?v=2">
+</head>
+<body>
+
+  <header>
+    <a href="/" id="logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo-img">
+    </a>
+
+    <form method="GET" action="/" id="search">
+      <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+      <button type="submit">Search</button>
+    </form>
+  </header>
+
+  <main class="post-list">
+    {% for post in posts %}
+      <a href="{{ url_for('view_post', post_id=post['id']) }}" class="post-card">
+        {% if post['media'] %}
+          {% set first_media = post['media'].split(',')[0].strip() %}
+          {% if first_media.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+            <img src="{{ url_for('static', filename='uploads/' + first_media) }}" alt="thumbnail">
+          {% elif first_media.endswith(('.mp4', '.webm')) %}
+            <video muted preload="metadata" playsinline>
+              <source src="{{ url_for('static', filename='uploads/' + first_media) }}#t=1" type="video/mp4">
+              Seu navegador não suporta vídeos.
+            </video>
+          {% else %}
+            <div class="no-thumbnail">Arquivo</div>
+          {% endif %}
+        {% else %}
+          <div class="no-thumbnail">No Media</div>
+        {% endif %}
+
+        <div class="post-info">
+          <h3>{{ post['title'] }}</h3>
+          <p>{{ post['content'][:80] }}...</p>
+        </div>
+      </a>
+    {% endfor %}
+  </main>
+
+</body>
+</html>

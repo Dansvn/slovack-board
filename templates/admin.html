@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/style_admin.css') }}" />
+</head>
+<body>
+  <header>
+    <p>Logado como: {{ admin }}</p>
+      <a href="{{ url_for('index') }}">Página Inicial</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </header>
+
+  <section id="new-post">
+    <h2>Novo Post</h2>
+    <form method="post" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Título" required />
+      <textarea name="content" placeholder="Conteúdo" required></textarea>
+      <input type="file" name="media[]" multiple accept="image/*,video/*" />
+      <button type="submit">Enviar Post</button>
+    </form>
+  </section>
+
+  <section id="all-posts">
+    <h2>Posts Existentes</h2>
+
+    {% for post in posts %}
+      <article class="admin-post">
+        <p><strong>Postado por:</strong> {{ post['author'] }}</p>
+
+        <form method="post" action="{{ url_for('edit', post_id=post['id']) }}" enctype="multipart/form-data">
+          <input type="text" name="title" value="{{ post['title'] }}" required />
+          <textarea name="content" required>{{ post['content'] }}</textarea>
+          <input type="file" name="media[]" multiple accept="image/*,video/*" />
+          <button type="submit">Salvar</button>
+        </form>
+
+        <form method="post" action="{{ url_for('delete', post_id=post['id']) }}">
+          <button type="submit" onclick="return confirm('Tem certeza que deseja deletar este post?');">Deletar</button>
+        </form>
+      </article>
+    {% else %}
+      <p>Nenhum post encontrado.</p>
+    {% endfor %}
+  </section>
+</body>
+</html>

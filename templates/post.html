@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ post['title'] }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style/style_post.css') }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <header>
+    <a href="/" id="logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo-img" />
+    </a>
+    <form method="GET" action="/" id="search">
+      <input type="text" name="search" placeholder="Buscar..." value="{{ request.args.get('search', '') }}" />
+      <button type="submit">Buscar</button>
+    </form>
+  </header>
+
+  <main class="container">
+    <h1>{{ post['title'] }}</h1>
+
+    {% if post['media'] %}
+      <div class="media-box">
+        {% for file in post['media'].split(',') %}
+          {% set file = file.strip() %}
+          {% if file.endswith(('.mp4', '.webm')) %}
+            <video controls muted playsinline>
+              <source src="{{ url_for('static', filename='uploads/' + file) }}" type="video/mp4" />
+              Seu navegador não suporta vídeo.
+            </video>
+          {% else %}
+            <img src="{{ url_for('static', filename='uploads/' + file) }}" alt="{{ post['title'] }}" />
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <p class="description">{{ post['content'] }}</p>
+
+    <div class="interactions">
+      <button class="like-btn" onclick="toggleLike()" id="like-button" aria-label="Curtir post">
+        <img id="like-img" src="{{ url_for('static', filename='img/like.png') }}" alt="Like" />
+        <span id="like-count">{{ post.likes }}</span>
+      </button>
+      <button class="comment-btn" onclick="toggleComments()" aria-label="Mostrar comentários">
+        <img src="{{ url_for('static', filename='img/coments.png') }}" alt="Comentários" />
+        <span>{{ comments|length }}</span>
+      </button>
+    </div>
+
+    <section id="comments-section" class="comments" style="display: none;">
+      <ul id="comments-list">
+        {% for comment in comments %}
+          <li>
+            <strong>Svncto:</strong> {{ comment['content'] }}<br />
+            <small style="color:#888;">{{ comment['created_at_str'] | default('') }}</small>
+          </li>
+        {% else %}
+          <li>Nenhum comentário ainda.</li>
+        {% endfor %}
+      </ul>
+
+      <form id="comment-form" action="{{ url_for('comment_post', post_id=post['id']) }}" method="POST">
+        <input type="text" name="comment" placeholder="Escreva um comentário..." required />
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <section>
+      <h2 class="more-title">Mais Posts</h2>
+      <div class="more-posts" id="more-posts-container">
+        {% for other_post in more_posts %}
+          <a href="{{ url_for('view_post', post_id=other_post['id']) }}" class="post-thumb">
+            {% if other_post['media'] %}
+              {% set thumb = other_post['media'].split(',')[0].strip() %}
+              {% if thumb.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                <img src="{{ url_for('static', filename='uploads/' + thumb) }}" alt="thumbnail" />
+              {% elif thumb.endswith(('.mp4', '.webm')) %}
+                <video muted preload="metadata" playsinline>
+                  <source src="{{ url_for('static', filename='uploads/' + thumb) }}#t=1" type="video/mp4" />
+                </video>
+              {% else %}
+                <div class="no-thumbnail">Sem mídia</div>
+              {% endif %}
+            {% else %}
+              <div class="no-thumbnail">Sem mídia</div>
+            {% endif %}
+            <div class="post-info">
+              <h3>{{ other_post['title'] }}</h3>
+              <p>{{ other_post['content'][:80] }}{% if other_post['content']|length > 80 %}...{% endif %}</p>
+            </div>
+          </a>
+        {% else %}
+          <p>Nenhum outro post disponível.</p>
+        {% endfor %}
+      </div>
+
+      <button id="loadMorePostsBtn">Ver mais</button>
+    </section>
+  </main>
+
+  <script>
+    function toggleComments() {
+      const section = document.getElementById('comments-section');
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function toggleLike() {
+      const likeBtn = document.getElementById('like-button');
+      const likeImg = document.getElementById('like-img');
+      const likeCount = document.getElementById('like-count');
+      const postId = window.postData.id;
+
+      const localKey = `liked_post_${postId}`;
+      const alreadyLiked = localStorage.getItem(localKey) === 'true';
+
+      const action = alreadyLiked ? 'unlike' : 'like';
+
+      try {
+        const response = await fetch(`/post/${postId}/like`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Erro ao atualizar like');
+
+        likeCount.textContent = data.likes;
+
+        const newLikedState = !alreadyLiked;
+        likeImg.src = newLikedState ? window.postData.likedUrl : window.postData.likeUrl;
+        likeBtn.classList.toggle('liked', newLikedState);
+        localStorage.setItem(localKey, newLikedState.toString());
+      } catch (err) {
+        alert(err.message || 'Erro ao curtir post');
+      }
+    }
+
+    window.postData = {
+      id: {{ post['id'] }},
+      likeUrl: "{{ url_for('static', filename='img/like.png') }}",
+      likedUrl: "{{ url_for('static', filename='img/liked.png') }}"
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const postId = window.postData.id;
+      const localKey = `liked_post_${postId}`;
+      const liked = localStorage.getItem(localKey) === 'true';
+
+      const likeBtn = document.getElementById('like-button');
+      const likeImg = document.getElementById('like-img');
+
+      if (liked) {
+        likeBtn.classList.add('liked');
+        likeImg.src = window.postData.likedUrl;
+      } else {
+        likeBtn.classList.remove('liked');
+        likeImg.src = window.postData.likeUrl;
+      }
+    });
+
+    let offset = {{ more_posts|length }};
+    const postId = {{ post['id'] }};
+
+    document.getElementById("loadMorePostsBtn").addEventListener("click", async function() {
+      this.disabled = true;
+      this.textContent = "Carregando...";
+
+      try {
+        const response = await fetch(`/load_more_posts?offset=${offset}&exclude_id=${postId}`);
+        if (!response.ok) throw new Error("Erro ao buscar posts");
+        const posts = await response.json();
+
+        if (posts.length === 0) {
+          this.textContent = "Não há mais posts";
+          return;
+        }
+
+        const container = document.getElementById("more-posts-container");
+        posts.forEach(post => {
+          const a = document.createElement("a");
+          a.href = `/post/${post.id}`;
+          a.classList.add("post-thumb");
+
+          let mediaHtml = '';
+          if (post.media) {
+            const thumb = post.media;
+            if (/\.(jpg|jpeg|png|gif)$/i.test(thumb)) {
+              mediaHtml = `<img src="/static/uploads/${thumb}" alt="thumbnail" />`;
+            } else if (/\.(mp4|webm)$/i.test(thumb)) {
+              mediaHtml = `<video muted preload="metadata" playsinline>
+                            <source src="/static/uploads/${thumb}#t=1" type="video/mp4" />
+                           </video>`;
+            } else {
+              mediaHtml = `<div class="no-thumbnail">Sem mídia</div>`;
+            }
+          } else {
+            mediaHtml = `<div class="no-thumbnail">Sem mídia</div>`;
+          }
+
+          a.innerHTML = `
+            ${mediaHtml}
+            <div class="post-info">
+              <h3>${post.title}</h3>
+              <p>${post.content.length > 80 ? post.content.slice(0, 80) + "..." : post.content}</p>
+            </div>
+          `;
+
+          container.appendChild(a);
+        });
+
+        offset += posts.length;
+        this.disabled = false;
+        this.textContent = "Ver mais";
+
+      } catch (error) {
+        alert(error.message);
+        this.disabled = false;
+        this.textContent = "Ver mais";
+      }
+    });
+  </script>
+</body>
+</html>

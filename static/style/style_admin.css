@@ -1,0 +1,92 @@
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: sans-serif;
+  padding: 30px;
+  margin: 0;
+  font-size: 20px;
+}
+
+h1, h2 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+form {
+  margin-bottom: 25px;
+  background: #111;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 16px;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+  font-size: 20px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-size: 16px;
+  padding: 12px;
+}
+
+button {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  font-size: 20px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #ddd;
+}
+
+.admin-post {
+  background: #111;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 20px;
+    font-size: 22px;
+  }
+
+  h1, h2 {
+    font-size: 22px;
+  }
+
+  input, button {
+    font-size: 22px;
+    padding: 18px;
+  }
+
+  textarea {
+    min-height: 60px;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  form {
+    padding: 18px;
+  }
+}
