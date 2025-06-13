@@ -29,7 +29,7 @@ A simple Flask app to manage posts with media, likes, and comments.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/slovack-board.git
+git clone https://github.com/Dansvn/slovack-board.git
 cd slovack-board
 ```
 
